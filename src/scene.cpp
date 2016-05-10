@@ -197,6 +197,7 @@ Vector3d Scene::propagate(Ray &ray, const Vector3d &default_color, std::mt19937 
 	}
 	*/
 	if(tree2_.propagate(ray, collision)) {
+		//result = Vector3d(1, 0, 0);
 		result = shade(ray, random, collision, depth, default_color);
 	}
 	

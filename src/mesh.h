@@ -26,6 +26,7 @@ public:
 
 	void transform_vertices(const Matrix &transform, const Matrix &normal_transform);
 
+	std::string name() const { return m_name; }
 	size_t memory_size() const;
 
 	const AABB &bounds() const { return m_bounds; }

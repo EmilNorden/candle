@@ -31,6 +31,7 @@ public:
 	void update_transform(bool force_update = false);
 
 	void print_memory_usage() const;
+	
 protected:
 	Matrix m_transform;
 	bool m_transform_is_dirty;

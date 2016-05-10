@@ -14,6 +14,7 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   # Set warning level
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread -Wall -Wno-long-long -pedantic")
 
+
  # Set C++11
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 endif()
@@ -25,14 +26,14 @@ add_executable (candle ${candle_SRC})
 
 find_package(FreeImage REQUIRED)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
+find_package(Config++ REQUIRED)
 
 add_subdirectory("lib/assimp-3.2")
-
-message(STATUS "boost--------${Boost_SYSTEM_LIBRARY}---------")
 
 include_directories(
 	"lib/assimp-3.2/include"
 	${FreeImage_INCLUDE_DIRS}
+  ${CONFIG++_INCLUDE_DIR}
 )
 
 target_link_libraries(candle
@@ -40,4 +41,5 @@ target_link_libraries(candle
 	${FreeImage_LIBRARIES}
 	${Boost_FILESYSTEM_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
+  ${CONFIG++_LIBRARY}
 )	

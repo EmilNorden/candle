@@ -12,6 +12,7 @@
 #include <chrono>
 #include <random>
 #include <thread>
+#include <memory>
 
 #ifdef _DEBUG
 #define NO_THREADS 5
@@ -105,21 +106,26 @@ void RayTracer::render(RenderConfiguration &configuration, Camera &camera, Scene
 {
 	std::mt19937 random(time(0));
 	RenderContext context(configuration, random);
+	
+	int nthreads = configuration.nthreads();
+	
+	if(nthreads == 0)
+		nthreads = NO_THREADS;
 
-	std::thread threads[NO_THREADS];
+	std::unique_ptr<std::thread[]> threads(new std::thread[nthreads]);
 
 	std::cout << "Starting render...\n";
-	std::cout << "Threads: " << NO_THREADS << "\n";
+	std::cout << "Threads: " << nthreads << "\n";
 
 	std::chrono::high_resolution_clock clock;
 	auto render_start = clock.now();
 	
-	for(size_t i = 0; i < NO_THREADS; ++i) {
+	for(int i = 0; i < nthreads; ++i) {
 		bool report_progress = i == 0;
 		threads[i] = std::thread(Render, std::ref(context), camera, scene, report_progress);
 	}
 
-	for(size_t i = 0; i < NO_THREADS; ++i) {
+	for(int i = 0; i < nthreads; ++i) {
 		threads[i].join();
 	}
 
@@ -154,21 +160,26 @@ void RayTracer::render_hotspots(RenderConfiguration &configuration, Camera &came
 {
 	std::mt19937 random(time(0));
 	RenderContext context(configuration, random);
+	
+	int nthreads = configuration.nthreads();
+	
+	if(nthreads == 0)
+		nthreads = NO_THREADS;
 
-	std::thread threads[NO_THREADS];
+	std::unique_ptr<std::thread[]> threads(new std::thread[nthreads]);
 
 	std::cout << "Starting render...\n";
-	std::cout << "Threads: " << NO_THREADS << "\n";
+	std::cout << "Threads: " << nthreads << "\n";
 
 	std::chrono::high_resolution_clock clock;
 	auto render_start = clock.now();
 	
-	for(size_t i = 0; i < NO_THREADS; ++i) {
+	for(int i = 0; i < nthreads; ++i) {
 		bool report_progress = i == 0;
 		threads[i] = std::thread(RenderHotspots, std::ref(context), camera, scene, report_progress);
 	}
 
-	for(size_t i = 0; i < NO_THREADS; ++i) {
+	for(int i = 0; i < nthreads; ++i) {
 		threads[i].join();
 	}
 

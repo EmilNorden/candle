@@ -15,6 +15,7 @@
 #include "model.h"
 #include "output_util.h"
 #include "vector.h"
+#include "texture.h"
 
 using namespace std;
 
@@ -64,13 +65,19 @@ shared_ptr<Model> AssimpModelProcessor::load(const string &path, size_t vertex_l
 
 	cout << "Loading materials.\n";
 	map<size_t, shared_ptr<Material>> materials;
+	int textured_materials = 0;
 	for(size_t i = 0; i < scene->mNumMaterials; ++i)
 	{
 		display_progress((i+1) / (float)scene->mNumMaterials);
 		const shared_ptr<Material> &material = load_single_material(i, scene->mMaterials[i], path, allow_cached_materials);
 		if(material)
 			materials.emplace(material->index(), material);
+			
+		if(material->has_texture())
+			textured_materials++;
 	}
+	cout << "Loaded " << materials.size() << " materials.\n";
+	cout << "Textured materials: " << textured_materials << ".\n";
 
 	cout << "\nLoading meshes.\n";
 	vector<unique_ptr<Mesh>> meshes;
@@ -78,8 +85,8 @@ shared_ptr<Model> AssimpModelProcessor::load(const string &path, size_t vertex_l
 	{
 		display_progress((i+1) / (float)scene->mNumMeshes);
 		meshes.push_back(load_single_mesh(scene->mMeshes[i], materials));
-
 	}
+	cout << "Loaded " << meshes.size() << " meshes.\n";
 	
 	cout << "\nModel loaded.\n";
 	//
@@ -94,8 +101,6 @@ shared_ptr<Model> AssimpModelProcessor::load(const string &path, size_t vertex_l
 
 shared_ptr<Material> AssimpModelProcessor::load_single_material(size_t index, aiMaterial *material, const string &model_path, bool allow_cached_materials)
 {
-	FIBITMAP *diffuse_texture = nullptr;
-
 	aiString name; 
 	aiGetMaterialString(material, AI_MATKEY_NAME, &name);
 
@@ -148,6 +153,7 @@ shared_ptr<Material> AssimpModelProcessor::load_single_material(size_t index, ai
 		texCount += material->GetTextureCount((aiTextureType)i);
 	}
 	
+	Texture* diffuse_texture = nullptr;
 	if(material->GetTexture(aiTextureType_DIFFUSE, 0, &p) == AI_SUCCESS) {
 		boost::filesystem::path texture_path(p.C_Str());
 
@@ -166,15 +172,16 @@ shared_ptr<Material> AssimpModelProcessor::load_single_material(size_t index, ai
 				throw runtime_error("Unable to determine texture format.");
 		}
 
-		diffuse_texture = FreeImage_Load(type, texture_path.string().c_str());
+		FIBITMAP *bitmap = FreeImage_Load(type, texture_path.string().c_str());
+		
+		diffuse_texture = new Texture(bitmap);
+		
+		FreeImage_Unload(bitmap);
+		
 	}
 
 	//return shared_ptr<Material>(nullptr);
 	auto mat = make_shared<Material>(index, diffuse_texture, Vector3d(diffuse_color.r, diffuse_color.g, diffuse_color.b), Vector3d(emissive_color.r, emissive_color.g, emissive_color.b));
-	 
-	if(diffuse_texture) {
-		FreeImage_Unload(diffuse_texture);
-	}
 
 	m_material_cache.insert(cache_key, mat);
 

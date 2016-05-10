@@ -41,7 +41,7 @@ void AABB::expand(const Vector3d &point)
 		m_max.z() = point.z();
 }
 
-bool AABB::intersects2(const Ray &ray) const
+bool AABB::intersects(const Ray &ray) const
 {
 	double tmin = -DBL_MAX;
 	double tmax = DBL_MAX;
@@ -76,7 +76,7 @@ bool AABB::intersects2(const Ray &ray) const
 	return tmax >= tmin;
 }
 
-bool AABB::intersects_dist2(const Ray &ray, double &dist) const
+bool AABB::intersects_dist(const Ray &ray, double &dist) const
 {
 	double tmin = -DBL_MAX;
 	double tmax = DBL_MAX;
@@ -142,10 +142,9 @@ const Vector3d &AABB::max() const
 }	
 
 /* Algorithm based on article: http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm */
+/*
 bool AABB::intersects(const Ray &ray) const
 {
-	return intersects2(ray);
-	
 	double tNear = DBL_MIN;
 	double tFar = DBL_MAX;
 	
@@ -257,8 +256,9 @@ bool AABB::intersects(const Ray &ray) const
 
 	return true;
 }
-
+*/
 /* Algorithm based on article: http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm */
+/*
 bool AABB::intersects_dist(const Ray &ray, double &dist) const
 {
 	return intersects_dist2(ray, dist);
@@ -376,3 +376,4 @@ bool AABB::intersects_dist(const Ray &ray, double &dist) const
 
 	return true;
 }
+*/
