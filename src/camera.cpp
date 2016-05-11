@@ -5,9 +5,19 @@
 #include "ray.h"
 #include "vector.h"
 
-#define PI 3.14159265359   
+#define PI 3.14159265359
 
-void Camera::update() {
+Camera::Camera(const Vector3d &pos, const Vector3d &dir, const Vector3d &up, const double fov, const double aspect_ratio,
+		const Vector2i &resolution, double focal_length, double blur_radius)
+		: m_position(pos), m_direction(dir), m_up(up), m_blur_radius(blur_radius), m_fov(fov),
+			m_aspect_ratio(aspect_ratio), m_focal_length(focal_length),	m_resolution(resolution) 
+{
+	if(aspect_ratio <= 0)
+		throw std::runtime_error("aspect_ratio must be greater than 0");
+}
+
+void Camera::update() 
+{
 	const int distance = 10;
 
 	double image_plane_height = 2 * distance * tan(m_fov / 2.0);

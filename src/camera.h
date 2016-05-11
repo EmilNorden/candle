@@ -12,13 +12,7 @@ class Camera
 public:
 
 	Camera(const Vector3d &pos, const Vector3d &dir, const Vector3d &up, const double fov, const double aspect_ratio,
-		const Vector2i &resolution, double focal_length, double blur_radius)
-		: m_position(pos), m_direction(dir), m_up(up), m_fov(fov), m_aspect_ratio(aspect_ratio), m_focal_length(focal_length),
-			m_resolution(resolution), m_blur_radius(blur_radius) {
-
-			if(aspect_ratio <= 0)
-				throw std::runtime_error("aspect_ratio must be greater than 0");
-	}
+		const Vector2i &resolution, double focal_length, double blur_radius);
 
 	void set_position(const Vector3d &pos) {
 		m_position = pos;

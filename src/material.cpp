@@ -3,7 +3,7 @@
 #include "texture.h"
 
 Material::Material(size_t idx, Texture *texture, const Vector3d &diffuse, const Vector3d &emissive)
-	: m_index(idx), m_diffuse_texture(texture), m_diffuse(diffuse), m_emissive(emissive)
+	: m_index(idx), m_diffuse(diffuse), m_emissive(emissive), m_diffuse_texture(texture), m_reflectivity(0.0)
 {
 }
 
