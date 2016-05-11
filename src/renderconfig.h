@@ -12,9 +12,9 @@ private:
 	size_t resolution_width_;
 	size_t resolution_height_;
 	size_t samples_;
-	Vector3d default_color_;
+	Color default_color_;
 public:
-	RenderConfiguration(int nthreads, size_t res_width, size_t res_height, size_t samples, const Vector3d &default_color)
+	RenderConfiguration(int nthreads, size_t res_width, size_t res_height, size_t samples, const Color &default_color)
 		: m_nthreads(nthreads), resolution_width_(res_width), resolution_height_(res_height),
 			samples_(samples), default_color_(default_color)
 	{
@@ -24,7 +24,7 @@ public:
 	size_t resolution_height() const { return resolution_height_; }
 	size_t resolution_width() const { return resolution_width_; }
 	size_t samples() const { return samples_; }
-	const Vector3d &default_color() const { return default_color_; }
+	const Color &default_color() const { return default_color_; }
 };
 
 #endif

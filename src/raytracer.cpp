@@ -25,7 +25,7 @@ class RenderContext
 public:
 	std::atomic_int scanline;
 	const RenderConfiguration &configuration;
-	std::unique_ptr<Vector3d[]> image_buffer;
+	std::unique_ptr<Color[]> image_buffer;
 	std::mt19937 &random;
 
 	RenderContext(const RenderConfiguration &config, std::mt19937 &rand)
@@ -33,7 +33,7 @@ public:
 	{
 		scanline = -1;
 
-		image_buffer.reset(new Vector3d[config.resolution_height() * config.resolution_width()]);
+		image_buffer.reset(new Color[config.resolution_height() * config.resolution_width()]);
 	}
 
 	bool get_next_scanline(size_t *line) { return (*line = ++scanline) < configuration.resolution_height(); }
@@ -51,11 +51,11 @@ void Render(RenderContext &context, const Camera &camera, const Scene &scene, bo
 				camera.cast_perturbed_ray(ray, x, current_scanline, context.random);
 				//camera.cast_ray(ray, x, current_scanline);
 
-				Vector3d result = scene.propagate(ray, context.configuration.default_color(), context.random);
+				Color result = scene.propagate(ray, context.configuration.default_color(), context.random);
 
-				result.clamp(Vector3d(0, 0, 0), Vector3d(1, 1, 1));
+				result.clamp(Color(0, 0, 0), Color(1, 1, 1));
 
-				Vector3d &pixel = context.image_buffer[(current_scanline * context.configuration.resolution_width()) + x];
+				Color &pixel = context.image_buffer[(current_scanline * context.configuration.resolution_width()) + x];
 				result.multiply(sample_importance);
 				pixel += result;
 				
@@ -86,11 +86,11 @@ void RenderHotspots(RenderContext &context, const Camera &camera, const Scene &s
 				camera.cast_perturbed_ray(ray, x, current_scanline, context.random);
 
 				auto t1 = clock.now();
-				Vector3d result = scene.propagate(ray, context.configuration.default_color(), context.random);
+				Color result = scene.propagate(ray, context.configuration.default_color(), context.random);
 				auto t2 = clock.now();
 				auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
-				Vector3d &pixel = context.image_buffer[(current_scanline * context.configuration.resolution_width()) + x];
+				Color &pixel = context.image_buffer[(current_scanline * context.configuration.resolution_width()) + x];
 				pixel.x() = milliseconds;
 			}
 		}
@@ -141,7 +141,7 @@ void RayTracer::render(RenderConfiguration &configuration, Camera &camera, Scene
 	{
 		for(size_t x = 0; x < configuration.resolution_width(); ++x)
 		{
-			Vector3d &color = context.image_buffer[(y * configuration.resolution_width()) + x];
+			Color &color = context.image_buffer[(y * configuration.resolution_width()) + x];
 			RGBQUAD rgb;
 			rgb.rgbRed = color.x() * 255;
 			rgb.rgbGreen = color.y() * 255;

@@ -32,24 +32,24 @@ void Texture::init_from_freeimage_bitmap(FIBITMAP *bmp)
 {
     m_width = FreeImage_GetWidth(bmp);
 	m_height = FreeImage_GetHeight(bmp);
-    m_buffer = new Vector3d[m_width * m_height];
+    m_buffer = new Color[m_width * m_height];
     
 	for(int y = 0 ; y < m_height; ++y) {
 		for(int x = 0; x < m_width; ++x) {
 			RGBQUAD rgb;
 			FreeImage_GetPixelColor(bmp, x, y, &rgb);
 
-			Vector3d &pixel = m_buffer[(y * m_width) + x];
-			pixel.x() = rgb.rgbRed / 255.0;
-			pixel.y() = rgb.rgbGreen / 255.0;
-			pixel.z() = rgb.rgbBlue / 255.0;
+			Color &pixel = m_buffer[(y * m_width) + x];
+			pixel.x() = rgb.rgbRed / 255.0f;
+			pixel.y() = rgb.rgbGreen / 255.0f;
+			pixel.z() = rgb.rgbBlue / 255.0f;
 		}
 	}
 }
 
-void Texture::sample(int x, int y, Vector3d &result) const
+void Texture::sample(int x, int y, Color &result) const
 {
-    const Vector3d &pixel = m_buffer[(y * m_width) + x];
+    const Color &pixel = m_buffer[(y * m_width) + x];
 	result.x() = pixel.x();
 	result.y() = pixel.y();
 	result.z() = pixel.z();

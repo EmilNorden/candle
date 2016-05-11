@@ -301,5 +301,8 @@ private:
 typedef Vector2<int> Vector2i;
 typedef Vector2<double> Vector2d;
 typedef Vector3<double> Vector3d;
+typedef Vector3<float> Vector3f;
+
+typedef Vector3<float> Color;
 
 #endif

@@ -36,7 +36,7 @@ void add_light_ball(std::mt19937 &rand, ModelLoader &loader, Scene &scene, const
 	ball2->set_translation(pos);
 	
 	for(auto &mesh : ball2->m_meshes)
-			mesh->m_material->set_emissive(Vector3d(11000, 11000, 11000));
+			mesh->m_material->set_emissive(Color(11000, 11000, 11000));
 			
 	return;
 
@@ -44,17 +44,17 @@ void add_light_ball(std::mt19937 &rand, ModelLoader &loader, Scene &scene, const
 	if(color == 0)
 	{
 		for(auto &mesh : ball2->m_meshes)
-			mesh->m_material->set_emissive(Vector3d(5000, 20000, 5000));
+			mesh->m_material->set_emissive(Color(5000, 20000, 5000));
 	}
 	else if(color == 1)
 	{
 		for(auto &mesh : ball2->m_meshes)
-			mesh->m_material->set_emissive(Vector3d(20000, 5000, 5000));
+			mesh->m_material->set_emissive(Color(20000, 5000, 5000));
 	}
 	else if(color == 2)
 	{
 		for(auto &mesh : ball2->m_meshes)
-			mesh->m_material->set_emissive(Vector3d(5000, 5000, 20000));
+			mesh->m_material->set_emissive(Color(5000, 5000, 20000));
 	}
 }
 
@@ -72,9 +72,9 @@ void add_mushroom_house(std::mt19937 &rand, ModelLoader &loader, Scene &scene, c
 
 #ifndef _TEST
 
-Vector3d parse_color(libconfig::Setting &colorSetting)
+Color parse_color(libconfig::Setting &colorSetting)
 {
-	return Vector3d(colorSetting.lookup("r"), colorSetting.lookup("g"), colorSetting.lookup("b"));
+	return Color(colorSetting.lookup("r"), colorSetting.lookup("g"), colorSetting.lookup("b"));
 }
 
 RenderConfiguration parse_render_config(libconfig::Config &cfg)
@@ -83,7 +83,7 @@ RenderConfiguration parse_render_config(libconfig::Config &cfg)
 	int renderHeight = cfg.lookup("render.height");
 	int samples = cfg.lookup("render.samples");
 	int nthreads = cfg.lookup("render.nthreads");
-	Vector3d backColor = parse_color(cfg.lookup("render.backColor"));
+	Color backColor = parse_color(cfg.lookup("render.backColor"));
 	
 	return RenderConfiguration(nthreads, renderWidth, renderHeight, samples,
 		backColor);;
@@ -156,8 +156,8 @@ void parse_scene_config(libconfig::Config &cfg, Scene &scene, ModelLoader &loade
 					{
 						meshFound = true;
 						Texture *texture = nullptr;
-						Vector3d diffuse;
-						Vector3d emission;
+						Color diffuse;
+						Color emission;
 						
 						if(meshConfig[j].exists("diffuseColor"))
 						{

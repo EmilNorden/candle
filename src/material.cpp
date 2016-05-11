@@ -2,12 +2,12 @@
 #include <FreeImage.h>
 #include "texture.h"
 
-Material::Material(size_t idx, Texture *texture, const Vector3d &diffuse, const Vector3d &emissive)
+Material::Material(size_t idx, Texture *texture, const Color &diffuse, const Color &emissive)
 	: m_index(idx), m_diffuse(diffuse), m_emissive(emissive), m_diffuse_texture(texture), m_reflectivity(0.0)
 {
 }
 
-void Material::sample(double u, double v, Vector3d &result) const
+void Material::sample(double u, double v, Color &result) const
 {
 	// TODO: Ta bort detta sen
 	if(u < 0.0)
@@ -30,12 +30,12 @@ void Material::sample(double u, double v, Vector3d &result) const
 	m_diffuse_texture->sample(x, y, result);
 }
 
-void Material::set_emissive(const Vector3d &emissive)
+void Material::set_emissive(const Color &emissive)
 {
 	m_emissive = emissive;
 }
 
-void Material::set_diffuse(const Vector3d &color)
+void Material::set_diffuse(const Color &color)
 {
 	m_diffuse = color;
 }

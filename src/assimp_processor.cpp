@@ -181,7 +181,7 @@ shared_ptr<Material> AssimpModelProcessor::load_single_material(size_t index, ai
 	}
 
 	//return shared_ptr<Material>(nullptr);
-	auto mat = make_shared<Material>(index, diffuse_texture, Vector3d(diffuse_color.r, diffuse_color.g, diffuse_color.b), Vector3d(emissive_color.r, emissive_color.g, emissive_color.b));
+	auto mat = make_shared<Material>(index, diffuse_texture, Color(diffuse_color.r, diffuse_color.g, diffuse_color.b), Color(emissive_color.r, emissive_color.g, emissive_color.b));
 
 	m_material_cache.insert(cache_key, mat);
 
