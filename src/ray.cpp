@@ -21,7 +21,7 @@ bool Ray::intersects(const Vector3d &v1, const Vector3d &v2, const Vector3d &v3,
 	
 	if(det > -EPSILON && det < EPSILON) return false;
 	// BACK-FACE CULLING
-	//if(det < EPSILON) return false;
+	if(det < EPSILON) return false;
 	inv_det = 1.0 / det;
 
 	//calculate distance from V1 to ray origin

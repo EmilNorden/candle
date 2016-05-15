@@ -3,6 +3,7 @@
 #include "material.h"
 #include "model.h"
 #include "ray.h"
+#include "ray_mesh_intersection.h"
 #include <iostream>
 
 Color Scene::propagate(Ray &ray, const Color &default_color, std::mt19937 &random, size_t depth) const
@@ -10,15 +11,15 @@ Color Scene::propagate(Ray &ray, const Color &default_color, std::mt19937 &rando
 	return propagate(ray, default_color, random, depth, nullptr);
 }
 
-bool ignore_mesh_triangle(const CollisionInfoInternal *ignore, const std::unique_ptr<Mesh> &mesh, uint16_t i0, uint16_t i1, uint16_t i2)
+bool ignore_mesh_triangle(const RayMeshIntersection *ignore, const std::unique_ptr<Mesh> &mesh, uint16_t i0, uint16_t i1, uint16_t i2)
 {
 	return ignore != nullptr &&
 		(mesh.get() == ignore->mesh && i0 == ignore->index0 && i1 == ignore->index1 && i2 == ignore->index2);
 }
 
-CollisionInfoInternal Scene::find_scene_intersection(const Ray &ray, const CollisionInfoInternal * ignore) const
+RayMeshIntersection Scene::find_scene_intersection(const Ray &ray, const RayMeshIntersection * ignore) const
 {
-	CollisionInfoInternal result;
+	RayMeshIntersection result;
 	double best_dist = DBL_MAX;
 
 	for(auto &model : models)
@@ -42,7 +43,7 @@ CollisionInfoInternal Scene::find_scene_intersection(const Ray &ray, const Colli
 				{
 					best_dist = dist;
 
-					result = CollisionInfoInternal(mesh.get(), i0, i1, i2, u, v);
+					result = RayMeshIntersection(mesh.get(), i0, i1, i2, u, v);
 				}
 			}
 		}
@@ -64,14 +65,14 @@ void Scene::global_illumination(Ray &ray, std::mt19937 &random, const std::share
 
 	Ray random_ray(intersection_point, final_dir);
 
-	CollisionInfoInternal random_collision;
+	RayMeshIntersection random_collision;
 	if(tree2_.propagate(random_ray, random_collision)) {
 		Vector3d viewer = ray.m_direction * -1;
 		Vector3d halfway = (random_dir + viewer);
 		halfway.normalize();
 
 		Color random_color = shade(random_ray, random, random_collision, depth-1, default_color);
-		// TODO: Calculate all these things in CollisionInfoInternal
+		// TODO: Calculate all these things in RayMeshIntersection
 
 		/*Vector3d &v1 = random_collision.mesh->m_vertices[random_collision.index1] - random_collision.mesh->m_vertices[random_collision.index0];
 		Vector3d &v2 = random_collision.mesh->m_vertices[random_collision.index2] - random_collision.mesh->m_vertices[random_collision.index0];
@@ -83,7 +84,7 @@ void Scene::global_illumination(Ray &ray, std::mt19937 &random, const std::share
 	
 }
 
-Color Scene::shade(Ray &ray, std::mt19937 &random, const CollisionInfoInternal &collision, size_t depth, const Color &default_color) const
+Color Scene::shade(Ray &ray, std::mt19937 &random, const RayMeshIntersection &collision, size_t depth, const Color &default_color) const
 {
 	if(depth == 0)
 		return Color(0, 0, 0);
@@ -130,7 +131,7 @@ Color Scene::shade(Ray &ray, std::mt19937 &random, const CollisionInfoInternal &
 			shadow_ray.m_direction = emissive_meshes_[i].center - intersection_point; // TODO: Pre-calculate center of mesh?
 			shadow_ray.m_direction.normalize();
 
-			CollisionInfoInternal shadow_collision;
+			RayMeshIntersection shadow_collision;
 			if(tree2_.propagate(shadow_ray, shadow_collision, &collision) && shadow_collision.mesh == mesh) {
 				// No obstruction between our mesh and the emissive mesh
 				double inv_square_length = 1.0 / squared_distance;
@@ -161,43 +162,18 @@ Color Scene::shade(Ray &ray, std::mt19937 &random, const CollisionInfoInternal &
 	return result;
 }
 
-//static bool should_ignore(const Mesh *mesh, uint16_t i0, uint16_t i1, uint16_t i2, const CollisionInfoInternal *ignore)
+//static bool should_ignore(const Mesh *mesh, uint16_t i0, uint16_t i1, uint16_t i2, const RayMeshIntersection *ignore)
 //{
 //	return ignore != nullptr && ignore->mesh == mesh && ignore->index0 == i0 && ignore->index1 == i1 && ignore->index2 == i2;
 //}
 
-Color Scene::propagate(Ray &ray, const Color &default_color, std::mt19937 &random, size_t depth, const CollisionInfoInternal *ignore) const
+Color Scene::propagate(Ray &ray, const Color &default_color, std::mt19937 &random, size_t depth, const RayMeshIntersection *ignore) const
 {
 	Color result = default_color;
 
-	CollisionInfoInternal collision;
-	/*
-	for(auto& model : models)
-	{
-		for(auto &mesh : model->m_meshes)
-		{
-			if(mesh->m_bounds.intersects2(ray))
-			{
-				for(size_t i = 0; i < mesh->m_indices.size(); i += 3)
-				{
-					uint16_t i0 = mesh->m_indices[i];
-					uint16_t i1 = mesh->m_indices[i+1];
-					uint16_t i2 = mesh->m_indices[i+2];
-					double temp_dist;
-					double u, v;
-					if(ray.intersects(mesh->m_vertices[i0], 
-						mesh->m_vertices[i1],
-						mesh->m_vertices[i2], &u, &v, &temp_dist))
-					{
-						result = Vector3d(1, 0, 0);
-					}
-				}
-			}
-		}
-	}
-	*/
+	RayMeshIntersection collision;
+	
 	if(tree2_.propagate(ray, collision)) {
-		//result = Vector3d(1, 0, 0);
 		result = shade(ray, random, collision, depth, default_color);
 	}
 	
@@ -223,7 +199,7 @@ void Scene::build_scene()
 	apply_all_transforms();
 	find_emissive_meshes();
 
-	tree_.build(models, 5, 5);
+	//tree_.build(models, 5, 5);
 
 	std::vector<Mesh*> meshes;
 	for(auto &model : models)
@@ -236,7 +212,7 @@ void Scene::build_scene()
 double Scene::measure_distance(Ray &ray)
 {
 	double dist = DBL_MAX;
-	CollisionInfoInternal collision;
+	RayMeshIntersection collision;
 	if(tree2_.propagate(ray, collision))
 		dist = ray.dist;
 	//tree_.propagate_distance(ray, &dist);
@@ -278,10 +254,3 @@ void Scene::find_emissive_meshes()
 	}
 }
 
-EmissiveMesh::EmissiveMesh(Mesh *m)
-	: mesh(m)
-{
-	double strength = m->m_material->emissive().length_squared();
-	effective_radius = strength * 100;
-	center = (m->bounds().min() + m->bounds().max()) / 2.0;
-}

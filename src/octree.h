@@ -3,7 +3,7 @@
 
 #include "aabb.h"
 #include "ray.h"
-#include "collisioninfo.h"
+#include "ray_mesh_intersection.h"
 #include <vector>
 #include <functional>
 #include <memory>
@@ -31,7 +31,7 @@ private:
 	void processTreeInternal(const Cuboid<T> &cuboid, const Ray &ray, const std::function<void(const T&)> &callback) const;
 	void find_max_depth(const Cuboid<T> &current, size_t current_depth, size_t &max_depth) const;
 
-	bool propagate_internal(Ray &ray, const Cuboid<T> &cuboid, CollisionInfoInternal &collision, const CollisionInfoInternal *ignore) const;
+	bool propagate_internal(Ray &ray, const Cuboid<T> &cuboid, RayMeshIntersection &collision, const RayMeshIntersection *ignore) const;
 public:
 	Octree() { }
 
@@ -40,7 +40,7 @@ public:
 	void processTree(const AABB &bounds, std::function<void(const T&)> &callback) const;
 	void processTree(const Ray &ray, const std::function<void(const T&)> &callback) const;
 
-	bool propagate(Ray &ray, CollisionInfoInternal &collision, const CollisionInfoInternal *ignore = nullptr) const;
+	bool propagate(Ray &ray, RayMeshIntersection &collision, const RayMeshIntersection *ignore = nullptr) const;
 
 	size_t depth() const;
 };
@@ -172,13 +172,13 @@ void Octree<T>::find_max_depth(const Cuboid<T> &current, size_t current_depth, s
 	}
 }
 
-static bool should_ignore(const Mesh *mesh, uint16_t i0, uint16_t i1, uint16_t i2, const CollisionInfoInternal *ignore)
+static bool should_ignore(const Mesh *mesh, uint16_t i0, uint16_t i1, uint16_t i2, const RayMeshIntersection *ignore)
 {
 	return ignore != nullptr && ignore->mesh == mesh && ignore->index0 == i0 && ignore->index1 == i1 && ignore->index2 == i2;
 }
 
 template <typename T>
-bool Octree<T>::propagate_internal(Ray &ray, const Cuboid<T> &cuboid, CollisionInfoInternal &collision, const CollisionInfoInternal *ignore) const
+bool Octree<T>::propagate_internal(Ray &ray, const Cuboid<T> &cuboid, RayMeshIntersection &collision, const RayMeshIntersection *ignore) const
 {
 	double cuboid_dist;
 	if(!cuboid.bounds.intersects_dist(ray, cuboid_dist))
@@ -241,7 +241,7 @@ bool Octree<T>::propagate_internal(Ray &ray, const Cuboid<T> &cuboid, CollisionI
 }
 
 template <typename T>
-bool Octree<T>::propagate(Ray &ray, CollisionInfoInternal &collision, const CollisionInfoInternal *ignore) const
+bool Octree<T>::propagate(Ray &ray, RayMeshIntersection &collision, const RayMeshIntersection *ignore) const
 {
 	return propagate_internal(ray, root_, collision, ignore);
 }

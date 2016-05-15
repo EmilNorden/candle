@@ -9,10 +9,11 @@
 #include "modelloader.h"
 #include "assimp_processor.h"
 #include "model.h"
-#include "scene.h"
+//#include "scene.h"
 #include "vector.h"
 #include "ray.h"
 #include "texture.h"
+#include "octreescene.h"
 
 #include <iostream>
 
@@ -28,10 +29,13 @@ double deg_to_rad(double deg)
 	return deg * (180.0 / PI);
 }
 
-void add_light_ball(std::mt19937 &rand, ModelLoader &loader, Scene &scene, const Vector3d  &pos)
+template <typename TScene>
+void add_light_ball(std::mt19937 &rand, ModelLoader &loader, TScene &scene, const Vector3d  &pos)
 {
 	auto ball2 = loader.load("/home/emil/models/sphere/only_quad_sphere.obj", false);
-	scene.models.push_back(ball2);
+	scene.add_model(ball2);
+	//scene.models.push_back(ball2);
+	
 	ball2->set_scale(Vector3d(10));
 	ball2->set_translation(pos);
 	
@@ -58,13 +62,14 @@ void add_light_ball(std::mt19937 &rand, ModelLoader &loader, Scene &scene, const
 	}
 }
 
-
-void add_mushroom_house(std::mt19937 &rand, ModelLoader &loader, Scene &scene, const Vector3d  &pos)
+template <typename TScene>
+void add_mushroom_house(std::mt19937 &rand, ModelLoader &loader, TScene &scene, const Vector3d  &pos)
 {
 	auto mush = loader.load("/home/emil/models/mushroom_house/Mushroom House.obj");
 	mush->set_translation(pos);
 	mush->set_rotation(Vector3d(0, -(PI / 2.0), 0));
-	scene.models.push_back(mush);
+	scene.add_model(mush);
+	//scene.models.push_back(mush);
 
 	//add_light_ball(rand, loader, scene, pos);
 	//add_light_ball(rand, loader, scene, pos);
@@ -117,7 +122,8 @@ Camera parse_camera_config(libconfig::Config &cfg, int resolution_width, int res
 		Vector2i(resolution_width, resolution_height), 599.041, blurRadius);
 }
 
-void parse_scene_config(libconfig::Config &cfg, Scene &scene, ModelLoader &loader)
+template <typename TScene>
+void parse_scene_config(libconfig::Config &cfg, TScene &scene, ModelLoader &loader)
 {
 	libconfig::Setting& objects = cfg.lookup("scene.objects");
 	
@@ -190,7 +196,8 @@ void parse_scene_config(libconfig::Config &cfg, Scene &scene, ModelLoader &loade
 				}
 			}
 		}
-		scene.models.push_back(model);
+		scene.add_model(model);
+		//scene.models.push_back(model);
 	}
 }
 
@@ -211,13 +218,12 @@ int main(int argc, char **argv)
 
 	auto renderConfiguration = parse_render_config(cfg);
 	auto camera = parse_camera_config(cfg, renderConfiguration.resolution_width(), renderConfiguration.resolution_height());
-	Scene scene;
+	//Scene scene;
+	OctreeScene scene;
 	
 	parse_scene_config(cfg, scene, loader);
 	
-	RayTracer tracer;
-
-	
+	RayTracer<OctreeScene> tracer;
 	
 	//add_mushroom_house(rand, loader, scene, Vector3d(0, 0, 0));
 	//add_light_ball(rand, loader, scene, Vector3d(-40, 300, 0));
@@ -229,14 +235,18 @@ int main(int argc, char **argv)
 
 	Ray dist_ray;
 	camera.cast_ray(dist_ray, renderConfiguration.resolution_width() / 2.0, renderConfiguration.resolution_height() / 2.0);
-	double dist = scene.measure_distance(dist_ray);
+	
+	double dist = DBL_MAX;
+	RayMeshIntersection intersection;
+	if(scene.propagate(dist_ray, intersection))
+		dist = dist_ray.dist;
+		
 	std::cout << "Distance: " << dist << "\n";
 	camera.set_focal_length(dist);
 	
 	//DWORD id = GetCurrentThreadId();
 
-	std::cout << "Scene size: " << scene.models.size() << " models.\n";
-	std::cout << "Octree depth: " << scene.tree_depth() << "\n";
+	scene.print_statistics();
 
 	tracer.render(renderConfiguration, camera, scene);
 	
