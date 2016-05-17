@@ -26,15 +26,22 @@ class Scene;
 #define NO_THREADS 1
 #endif
 
-template <typename TScene>
 class RayTracer
 {
 private:
+	template <typename TScene>
 	void render_internal(RenderContext &context, const Camera &camera, const TScene &scene, bool reports_progress);
+	
+	template <typename TScene>
 	void global_illumination(Ray &ray, const TScene &scene, std::mt19937 &random, const std::shared_ptr<Material> &material, const Vector3d &intersection_point, const Vector3d &surface_normal, Color &diffuse, Color &color, int depth) const;
+	
+	template <typename TScene>
 	Color shade(Ray &ray, const TScene &scene, std::mt19937 &random, const RayMeshIntersection &intersection, int depth) const;
 public:
+	template <typename TScene>
 	void render(RenderConfiguration &configuration, Camera &camera, TScene &scene);
+	
+	template <typename TScene>
 	void render_hotspots(RenderConfiguration &configuration, Camera &camera, TScene &scene);
 };
 
@@ -69,7 +76,7 @@ void RenderHotspots(RenderContext &context, const Camera &camera, const TScene &
 }
 
 template <typename TScene>
-void RayTracer<TScene>::global_illumination(Ray &ray, const TScene &scene,  std::mt19937 &random, const std::shared_ptr<Material> &material, const Vector3d &intersection_point, const Vector3d &surface_normal, Color &diffuse, Color &color, int depth) const
+void RayTracer::global_illumination(Ray &ray, const TScene &scene,  std::mt19937 &random, const std::shared_ptr<Material> &material, const Vector3d &intersection_point, const Vector3d &surface_normal, Color &diffuse, Color &color, int depth) const
 {
 	Vector3d random_dir = Vector3d::rand_unit_in_hemisphere(surface_normal, random);
 	
@@ -102,7 +109,7 @@ void RayTracer<TScene>::global_illumination(Ray &ray, const TScene &scene,  std:
 }
 
 template <typename TScene>
-Color RayTracer<TScene>::shade(Ray &ray, const TScene &scene, std::mt19937 &random, const RayMeshIntersection &intersection, int depth) const
+Color RayTracer::shade(Ray &ray, const TScene &scene, std::mt19937 &random, const RayMeshIntersection &intersection, int depth) const
 {
 	if(depth == 0)
 		return Color(0, 0, 0);
@@ -183,7 +190,7 @@ Color RayTracer<TScene>::shade(Ray &ray, const TScene &scene, std::mt19937 &rand
 
 
 template <typename TScene>
-void RayTracer<TScene>::render_internal(RenderContext &context, const Camera &camera, const TScene &scene, bool reports_progress)
+void RayTracer::render_internal(RenderContext &context, const Camera &camera, const TScene &scene, bool reports_progress)
 {
 	Ray ray;
 	RayMeshIntersection intersection;
@@ -221,7 +228,7 @@ void RayTracer<TScene>::render_internal(RenderContext &context, const Camera &ca
 
 
 template <typename TScene>
-void RayTracer<TScene>::render(RenderConfiguration &configuration, Camera &camera, TScene &scene)
+void RayTracer::render(RenderConfiguration &configuration, Camera &camera, TScene &scene)
 {
 	std::mt19937 random(time(0));
 	RenderContext context(configuration, random);
@@ -241,7 +248,7 @@ void RayTracer<TScene>::render(RenderConfiguration &configuration, Camera &camer
 	
 	for(int i = 0; i < nthreads; ++i) {
 		bool report_progress = i == 0;
-		threads[i] = std::thread(&RayTracer<TScene>::render_internal, this, std::ref(context), camera, scene, report_progress);
+		threads[i] = std::thread(&RayTracer::render_internal<TScene>, this, std::ref(context), camera, scene, report_progress);
 	}
 
 	for(int i = 0; i < nthreads; ++i) {
@@ -276,7 +283,7 @@ void RayTracer<TScene>::render(RenderConfiguration &configuration, Camera &camer
 }
 
 template <typename TScene>
-void RayTracer<TScene>::render_hotspots(RenderConfiguration &configuration, Camera &camera, TScene &scene)
+void RayTracer::render_hotspots(RenderConfiguration &configuration, Camera &camera, TScene &scene)
 {
 	std::mt19937 random(time(0));
 	RenderContext context(configuration, random);

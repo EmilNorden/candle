@@ -2,6 +2,7 @@
 #define EMISSIVE_MESH_H_
 
 #include "material.h"
+#include "mesh.h"
 
 class EmissiveMesh
 {

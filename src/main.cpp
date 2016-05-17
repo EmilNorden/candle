@@ -9,7 +9,6 @@
 #include "modelloader.h"
 #include "assimp_processor.h"
 #include "model.h"
-//#include "scene.h"
 #include "vector.h"
 #include "ray.h"
 #include "texture.h"
@@ -218,16 +217,12 @@ int main(int argc, char **argv)
 
 	auto renderConfiguration = parse_render_config(cfg);
 	auto camera = parse_camera_config(cfg, renderConfiguration.resolution_width(), renderConfiguration.resolution_height());
-	//Scene scene;
+	
 	OctreeScene scene;
 	
 	parse_scene_config(cfg, scene, loader);
 	
-	RayTracer<OctreeScene> tracer;
-	
-	//add_mushroom_house(rand, loader, scene, Vector3d(0, 0, 0));
-	//add_light_ball(rand, loader, scene, Vector3d(-40, 300, 0));
-	//add_light_ball(rand, loader, scene, Vector3d(40, 100, 300));
+	RayTracer tracer;
 	
 	camera.update();
 

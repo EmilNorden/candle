@@ -209,10 +209,7 @@ bool Octree<T>::propagate_internal(Ray &ray, const Cuboid<T> &cuboid, RayMeshInt
 						uint16_t i0 = mesh->m_indices[i];
 						uint16_t i1 = mesh->m_indices[i+1];
 						uint16_t i2 = mesh->m_indices[i+2];
-
-						//if(ignore_mesh_triangle(ignore, mesh, i0, i1, i2))
-						//	continue;
-
+						
 						double dist;
 						double u, v;
 						if(!should_ignore(mesh, i0, i1, i2, ignore) && ray.intersects(mesh->m_vertices[i0], 

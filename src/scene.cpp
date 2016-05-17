@@ -181,7 +181,6 @@ Color Scene::propagate(Ray &ray, const Color &default_color, std::mt19937 &rando
 	Color box_col(1);
 	for(auto &model : models) {
 		for(auto &mesh : model->m_meshes) {
-			//if(mesh->m_bounds.intersects(ray)) {
 				double size = 20;
 			if(AABB(Vector3d(-size, -size, -size), Vector3d(size, size, size)).intersects(ray)) {
 				result = (result * 0.8) + (box_col * 0.2);
@@ -198,8 +197,6 @@ void Scene::build_scene()
 	validate_no_duplicate_models();
 	apply_all_transforms();
 	find_emissive_meshes();
-
-	//tree_.build(models, 5, 5);
 
 	std::vector<Mesh*> meshes;
 	for(auto &model : models)
