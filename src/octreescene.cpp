@@ -19,9 +19,7 @@ void OctreeScene::build_scene()
 		for(auto &mesh : model->m_meshes)
 			meshes.push_back(mesh.get());
     
-    m_tree.build(5, 5, meshes.begin(), meshes.end());
-    
-    
+    m_tree.build(5, 1, meshes.begin(), meshes.end());
 }
 
 bool OctreeScene::propagate(Ray &ray, RayMeshIntersection &intersection, const RayMeshIntersection *ignore) const

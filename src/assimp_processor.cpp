@@ -190,22 +190,22 @@ shared_ptr<Material> AssimpModelProcessor::load_single_material(size_t index, ai
 
 unique_ptr<Mesh> AssimpModelProcessor::load_single_mesh(aiMesh *mesh, const map<size_t, shared_ptr<Material>> &materials) const
 {
-	vector<Vector3d> vertices;
+	vector<Vector3f> vertices;
 	vector<uint16_t> indices;
-	vector<Vector3d> normals;
-	vector<Vector2d> texture_coords;
+	vector<Vector3f> normals;
+	vector<Vector2f> texture_coords;
 
 	for(size_t i = 0; i < mesh->mNumVertices; ++i)
 	{
 		aiVector3D &vertice = mesh->mVertices[i];
-		vertices.push_back(Vector3d(vertice.x, vertice.y, vertice.z));
+		vertices.push_back(Vector3f(vertice.x, vertice.y, vertice.z));
 
 		aiVector3D &normal = mesh->mNormals[i];
-		normals.push_back(Vector3d(normal.x, normal.y, normal.z));
+		normals.push_back(Vector3f(normal.x, normal.y, normal.z));
 
 		if(mesh->HasTextureCoords(0)) {
 			aiVector3D &texture_coord = mesh->mTextureCoords[0][i];
-			texture_coords.push_back(Vector2d(texture_coord.x, texture_coord.y));
+			texture_coords.push_back(Vector2f(texture_coord.x, texture_coord.y));
 		}
 	}
 

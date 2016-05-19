@@ -9,7 +9,7 @@ class EmissiveMesh
 public:
 	Mesh *mesh;
 	double effective_radius;
-	Vector3d center;
+	Vector3f center;
 
 	EmissiveMesh(Mesh *m)
         : mesh(m)

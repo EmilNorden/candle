@@ -3,10 +3,10 @@
 #define EPSILON 9.99999997475243E-07
 //#define EPSILON 0.000001
 
-bool Ray::intersects(const Vector3d &v1, const Vector3d &v2, const Vector3d &v3, double *result_u, double *result_v, double *dist) const
+bool Ray::intersects(const Vector3f &v1, const Vector3f &v2, const Vector3f &v3, double *result_u, double *result_v, double *dist) const
 {
-	Vector3d e1, e2;  //Edge1, Edge2
-	Vector3d P, Q, T;
+	Vector3f e1, e2;  //Edge1, Edge2
+	Vector3f P, Q, T;
 	double det, inv_det, u, v;
 	double t;
 

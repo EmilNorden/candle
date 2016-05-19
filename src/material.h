@@ -12,7 +12,7 @@ class Material
 public:
 	Material(size_t idx, Texture *texture, const Color &diffuse, const Color &emissive);
 
-	void sample(double u, double v, Color &result) const;
+	void sample(float u, float v, Color &result) const;
 	const Color &emissive() const { return m_emissive; }
 	void set_emissive(const Color &emissive);
 	const Color &diffuse() const { return m_diffuse; }

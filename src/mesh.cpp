@@ -3,8 +3,8 @@
 #include "matrix.h"
 #include "material.h"
 
-Mesh::Mesh(const std::string &name, const std::vector<Vector3d> &vertices, const std::vector<uint16_t> &indices, const std::vector<Vector3d> &normals, const std::vector<Vector2d> &texture_coords, const std::shared_ptr<Material> &material)
-	: m_name(name), m_original_vertices(vertices), m_vertices(vertices), m_indices(indices), m_original_normals(normals), m_normals(normals), m_texture_coords(texture_coords), m_material(material), m_bounds(AABB(Vector3d(DBL_MAX), Vector3d(-DBL_MAX)))
+Mesh::Mesh(const std::string &name, const std::vector<Vector3f> &vertices, const std::vector<uint16_t> &indices, const std::vector<Vector3f> &normals, const std::vector<Vector2f> &texture_coords, const std::shared_ptr<Material> &material)
+	: m_name(name), m_original_vertices(vertices), m_vertices(vertices), m_indices(indices), m_original_normals(normals), m_normals(normals), m_texture_coords(texture_coords), m_material(material), m_bounds(AABB(Vector3f(FLT_MAX), Vector3f(-FLT_MAX)))
 {
 	update_bounds();
 }
@@ -25,7 +25,7 @@ void Mesh::transform_vertices(const Matrix &transform, const Matrix &normal_tran
 
 void Mesh::update_bounds()
 {
-	m_bounds = AABB(Vector3d(DBL_MAX), Vector3d(-DBL_MAX));
+	m_bounds = AABB(Vector3f(FLT_MAX), Vector3f(-FLT_MAX));
 
 	for(size_t i = 0; i < m_vertices.size(); ++i) {
 		m_bounds.expand(m_vertices[i]);

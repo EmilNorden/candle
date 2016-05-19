@@ -1,4 +1,4 @@
-#ifndef SCENE_H_
+/*#ifndef SCENE_H_
 #define SCENE_H_
 
 #include "mesh.h"
@@ -44,3 +44,4 @@ class OctreeScene
 };
 
 #endif
+*/

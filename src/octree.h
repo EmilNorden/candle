@@ -54,7 +54,6 @@ void Octree<T>::build(size_t treshold, size_t maxDepth, Iter a, Iter b, typename
 	{
 		root_.bounds.expand((*it)->bounds());
 		root_.objects.push_back(*it);
-		//root_.objects.push_back((*it).get());
 	}
 
 	buildCuboid(treshold, maxDepth, 1, root_);
@@ -65,7 +64,7 @@ void Octree<T>::buildCuboid(size_t treshold, size_t maxDepth, size_t depth, Cubo
 {
 	if(cuboid.objects.size() <= treshold || depth >= maxDepth)
 		return;
-	Vector3d splitSize = (cuboid.bounds.max() - cuboid.bounds.min()) / 2.0;
+	Vector3f splitSize = (cuboid.bounds.max() - cuboid.bounds.min()) / 2.0f;
 	cuboid.cuboids.reset(new Cuboid<T>[8], [](Cuboid<T> *p) { delete[] p; });
 	
 	for(int x = 0; x < 2; ++x)
@@ -74,8 +73,8 @@ void Octree<T>::buildCuboid(size_t treshold, size_t maxDepth, size_t depth, Cubo
 		{
 			for(int z = 0; z < 2; ++z) {
 				Cuboid<T> &child = cuboid.cuboids.get()[(x * 4) + (y * 2)  + z];
-				Vector3d child_min = cuboid.bounds.min() + (splitSize * Vector3d(x, y, z));
-				Vector3d child_max = child_min + splitSize;
+				Vector3f child_min = cuboid.bounds.min() + (splitSize * Vector3f(x, y, z));
+				Vector3f child_max = child_min + splitSize;
 				child.bounds = AABB(child_min, child_max);
 				
 				for(int obj_i = cuboid.objects.size() - 1; obj_i >= 0; --obj_i)

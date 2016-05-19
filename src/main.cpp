@@ -98,22 +98,22 @@ Camera parse_camera_config(libconfig::Config &cfg, int resolution_width, int res
 	double fov = cfg.lookup("camera.fov");
 	double blurRadius = cfg.lookup("camera.blurRadius");
 	
-	Vector3d position(
+	Vector3f position(
 		cfg.lookup("camera.position.x"), 
 		cfg.lookup("camera.position.y"), 
 		cfg.lookup("camera.position.z"));
 		
-	Vector3d target(
+	Vector3f target(
 		cfg.lookup("camera.target.x"), 
 		cfg.lookup("camera.target.y"), 
 		cfg.lookup("camera.target.z"));
 	
-	Vector3d up(
+	Vector3f up(
 		cfg.lookup("camera.up.x"),
 		cfg.lookup("camera.up.y"),
 		cfg.lookup("camera.up.z"));
 	
-	Vector3d direction = target - position;
+	Vector3f direction = target - position;
 	direction.normalize();
 	
 	return Camera(position, direction, up, fov, 

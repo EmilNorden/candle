@@ -244,11 +244,12 @@ public:
 		matrix->m_v[3][3] = 1.0f;
 	}
 
-	static void transform(const Vector3d &v, const Matrix &matrix, Vector3d &result)
+	template <typename Vector>
+	static void transform(const Vector &v, const Matrix &matrix, Vector &result)
 	{
-		double num1 =  ((double) v.x() * (double) matrix.m_v[0][0] + (double) v.y() * (double) matrix.m_v[1][0] + (double) v.z() * (double) matrix.m_v[2][0]) + matrix.m_v[3][0];
-		double num2 = ((double) v.x() * (double) matrix.m_v[0][1] + (double) v.y() * (double) matrix.m_v[1][1] + (double) v.z() * (double) matrix.m_v[2][1]) + matrix.m_v[3][1];
-		double num3 = ((double) v.x() * (double) matrix.m_v[0][2] + (double) v.y() * (double) matrix.m_v[1][2] + (double) v.z() * (double) matrix.m_v[2][2]) + matrix.m_v[3][2];
+		double num1 = (v.x() * matrix.m_v[0][0] + v.y() * matrix.m_v[1][0] + v.z() * matrix.m_v[2][0]) + matrix.m_v[3][0];
+		double num2 = (v.x() * matrix.m_v[0][1] + v.y() * matrix.m_v[1][1] + v.z() * matrix.m_v[2][1]) + matrix.m_v[3][1];
+		double num3 = (v.x() * matrix.m_v[0][2] + v.y() * matrix.m_v[1][2] +  v.z() * matrix.m_v[2][2]) + matrix.m_v[3][2];
 		result.x() = num1;
 		result.y() = num2;
 		result.z() = num3;

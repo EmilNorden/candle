@@ -9,11 +9,11 @@
 #define INTERSECT_EPSILON 9.99999997475243E-07
 
 AABB::AABB()
-	: m_min(Vector3d(0, 0, 0)), m_max(Vector3d(0, 0, 0))
+	: m_min(Vector3f(0, 0, 0)), m_max(Vector3f(0, 0, 0))
 {
 }
 
-AABB::AABB(const Vector3d &min, const Vector3d &max)
+AABB::AABB(const Vector3f &min, const Vector3f &max)
 	: m_min(min), m_max(max)
 {
 }
@@ -24,7 +24,7 @@ void AABB::expand(const AABB &other)
 	expand(other.m_max);
 }
 
-void AABB::expand(const Vector3d &point)
+void AABB::expand(const Vector3f &point)
 {
 	if(point.x() < m_min.x())
 		m_min.x() = point.x();
@@ -131,15 +131,6 @@ bool AABB::intersects(const AABB &other) const
 
 	return true;
 }
-
-const Vector3d &AABB::min() const
-{
-	return m_min;
-}
-const Vector3d &AABB::max() const
-{
-	return m_max;
-}	
 
 /* Algorithm based on article: http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm */
 /*

@@ -1,4 +1,5 @@
-#include "scene.h"
+/*#in
+clude "scene.h"
 
 #include "material.h"
 #include "model.h"
@@ -72,13 +73,6 @@ void Scene::global_illumination(Ray &ray, std::mt19937 &random, const std::share
 		halfway.normalize();
 
 		Color random_color = shade(random_ray, random, random_collision, depth-1, default_color);
-		// TODO: Calculate all these things in RayMeshIntersection
-
-		/*Vector3d &v1 = random_collision.mesh->m_vertices[random_collision.index1] - random_collision.mesh->m_vertices[random_collision.index0];
-		Vector3d &v2 = random_collision.mesh->m_vertices[random_collision.index2] - random_collision.mesh->m_vertices[random_collision.index0];
-		Vector3d &random_point = random_collision.mesh->m_vertices[random_collision.index0] + (v1 * random_collision.u) + (v2 * random_collision.v);
-		Vector3d dir = random_point - intersection_point;*/
-
 		color += diffuse * random_color;
 	}
 	
@@ -106,7 +100,6 @@ Color Scene::shade(Ray &ray, std::mt19937 &random, const RayMeshIntersection &co
 		const Vector2d &tex2 = collision.mesh->m_texture_coords[collision.index2] - collision.mesh->m_texture_coords[collision.index0];
 		const Vector2d &interpolated_uv = collision.mesh->m_texture_coords[collision.index0] + (tex1 * collision.u) + (tex2 * collision.v);
 
-		//diffuse_color = mat->diffuse(interpolated_uv.x(), interpolated_uv.y());
 		Color tex_sample;
 		mat->sample(interpolated_uv.x(), interpolated_uv.y(), tex_sample);
 		diffuse_color = tex_sample;
@@ -120,12 +113,11 @@ Color Scene::shade(Ray &ray, std::mt19937 &random, const RayMeshIntersection &co
 
 	global_illumination(ray, random, mat, intersection_point, interpolated_normal, diffuse_color, result, depth, default_color);
 
-	// diffuse
 	size_t emissive_mesh_count = emissive_meshes_.size();
 	for(size_t i = 0; i < emissive_mesh_count; ++i) {
 		const Mesh *mesh = emissive_meshes_[i].mesh;
 		double squared_distance = (emissive_meshes_[i].center - intersection_point).length_squared();
-		if(/*squared_distance <= emissive_meshes_[i].effective_radius &&*/ mesh != collision.mesh) {
+		if( mesh != collision.mesh) {
 			Ray shadow_ray;
 			shadow_ray.m_origin = intersection_point;
 			shadow_ray.m_direction = emissive_meshes_[i].center - intersection_point; // TODO: Pre-calculate center of mesh?
@@ -143,22 +135,7 @@ Color Scene::shade(Ray &ray, std::mt19937 &random, const RayMeshIntersection &co
 			}
 		}
 }
-	
-	//if(mat->reflectivity() > 0) {
-	//	result = Vector3d(1, 0, 0);
-	//	//Vector3d reflected_direction = ray.m_direction - interpolated_normal * 2.0 * ray.m_direction.dot(interpolated_normal);
-	//	//reflected_direction.normalize();
-	//	//Ray reflected_ray(intersection_point, reflected_direction);
 
-	//	//result = result*(1-mat->reflectivity()) + propagate(reflected_ray, default_color, random, depth-1, &collision)*mat->reflectivity();
-	//}
-
-	/*Vector3d light(1, 1, 0);
-	light.normalize();
-	double dot = light.dot(interpolated_normal);
-	if(dot < 0)
-		dot = 0.2;
-	result = diffuse_color * dot;*/
 	return result;
 }
 
@@ -251,3 +228,4 @@ void Scene::find_emissive_meshes()
 	}
 }
 
+*/

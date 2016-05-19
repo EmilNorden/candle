@@ -33,7 +33,7 @@ private:
 	void render_internal(RenderContext &context, const Camera &camera, const TScene &scene, bool reports_progress);
 	
 	template <typename TScene>
-	void global_illumination(Ray &ray, const TScene &scene, std::mt19937 &random, const std::shared_ptr<Material> &material, const Vector3d &intersection_point, const Vector3d &surface_normal, Color &diffuse, Color &color, int depth) const;
+	void global_illumination(Ray &ray, const TScene &scene, std::mt19937 &random, const std::shared_ptr<Material> &material, const Vector3f &intersection_point, const Vector3f &surface_normal, Color &diffuse, Color &color, int depth) const;
 	
 	template <typename TScene>
 	Color shade(Ray &ray, const TScene &scene, std::mt19937 &random, const RayMeshIntersection &intersection, int depth) const;
@@ -76,23 +76,23 @@ void RenderHotspots(RenderContext &context, const Camera &camera, const TScene &
 }
 
 template <typename TScene>
-void RayTracer::global_illumination(Ray &ray, const TScene &scene,  std::mt19937 &random, const std::shared_ptr<Material> &material, const Vector3d &intersection_point, const Vector3d &surface_normal, Color &diffuse, Color &color, int depth) const
+void RayTracer::global_illumination(Ray &ray, const TScene &scene,  std::mt19937 &random, const std::shared_ptr<Material> &material, const Vector3f &intersection_point, const Vector3f &surface_normal, Color &diffuse, Color &color, int depth) const
 {
-	Vector3d random_dir = Vector3d::rand_unit_in_hemisphere(surface_normal, random);
+	Vector3f random_dir = Vector3f::rand_unit_in_hemisphere(surface_normal, random);
 	
 
-	Vector3d reflected_direction = ray.m_direction - surface_normal * 2.0 * ray.m_direction.dot(surface_normal);
+	Vector3f reflected_direction = ray.m_direction - surface_normal * 2.0 * ray.m_direction.dot(surface_normal);
 	reflected_direction.normalize();
 
-	Vector3d final_dir = Vector3d::lerp(random_dir, reflected_direction, material->reflectivity());
+	Vector3f final_dir = Vector3f::lerp(random_dir, reflected_direction, material->reflectivity());
 	final_dir.normalize();
 
 	Ray random_ray(intersection_point, final_dir);
 
 	RayMeshIntersection random_collision;
 	if(scene.propagate(random_ray, random_collision)) {
-		Vector3d viewer = ray.m_direction * -1;
-		Vector3d halfway = (random_dir + viewer);
+		Vector3f viewer = ray.m_direction * -1;
+		Vector3f halfway = (random_dir + viewer);
 		halfway.normalize();
 
 		Color random_color = shade(random_ray, scene, random, random_collision, depth-1);
@@ -116,20 +116,20 @@ Color RayTracer::shade(Ray &ray, const TScene &scene, std::mt19937 &random, cons
 
 	const std::shared_ptr<Material> &mat = intersection.mesh->m_material;
 	// X == 330 && current_scanline == 370
-	const Vector3d &v1 = intersection.mesh->m_vertices[intersection.index1] - intersection.mesh->m_vertices[intersection.index0];
-	const Vector3d &v2 = intersection.mesh->m_vertices[intersection.index2] - intersection.mesh->m_vertices[intersection.index0];
-	const Vector3d &intersection_point = intersection.mesh->m_vertices[intersection.index0] + (v1 * intersection.u) + (v2 * intersection.v);
+	const Vector3f &v1 = intersection.mesh->m_vertices[intersection.index1] - intersection.mesh->m_vertices[intersection.index0];
+	const Vector3f &v2 = intersection.mesh->m_vertices[intersection.index2] - intersection.mesh->m_vertices[intersection.index0];
+	const Vector3f &intersection_point = intersection.mesh->m_vertices[intersection.index0] + (v1 * intersection.u) + (v2 * intersection.v);
 
-	const Vector3d &n1 = intersection.mesh->m_normals[intersection.index1] - intersection.mesh->m_normals[intersection.index0];
-	const Vector3d &n2 = intersection.mesh->m_normals[intersection.index2] - intersection.mesh->m_normals[intersection.index0];
-	Vector3d interpolated_normal = intersection.mesh->m_normals[intersection.index0] + (n1 * intersection.u) + (n2 * intersection.v);
+	const Vector3f &n1 = intersection.mesh->m_normals[intersection.index1] - intersection.mesh->m_normals[intersection.index0];
+	const Vector3f &n2 = intersection.mesh->m_normals[intersection.index2] - intersection.mesh->m_normals[intersection.index0];
+	Vector3f interpolated_normal = intersection.mesh->m_normals[intersection.index0] + (n1 * intersection.u) + (n2 * intersection.v);
 	interpolated_normal.normalize();
 
 	Color diffuse_color;
 	if(mat->has_texture()) {
-		const Vector2d &tex1 = intersection.mesh->m_texture_coords[intersection.index1] - intersection.mesh->m_texture_coords[intersection.index0];
-		const Vector2d &tex2 = intersection.mesh->m_texture_coords[intersection.index2] - intersection.mesh->m_texture_coords[intersection.index0];
-		const Vector2d &interpolated_uv = intersection.mesh->m_texture_coords[intersection.index0] + (tex1 * intersection.u) + (tex2 * intersection.v);
+		const Vector2f &tex1 = intersection.mesh->m_texture_coords[intersection.index1] - intersection.mesh->m_texture_coords[intersection.index0];
+		const Vector2f &tex2 = intersection.mesh->m_texture_coords[intersection.index2] - intersection.mesh->m_texture_coords[intersection.index0];
+		const Vector2f &interpolated_uv = intersection.mesh->m_texture_coords[intersection.index0] + (tex1 * intersection.u) + (tex2 * intersection.v);
 		
 		Color tex_sample;
 		mat->sample(interpolated_uv.x(), interpolated_uv.y(), tex_sample);

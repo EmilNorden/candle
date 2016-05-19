@@ -7,18 +7,18 @@ Material::Material(size_t idx, Texture *texture, const Color &diffuse, const Col
 {
 }
 
-void Material::sample(double u, double v, Color &result) const
+void Material::sample(float u, float v, Color &result) const
 {
 	// TODO: Ta bort detta sen
-	if(u < 0.0)
-		u = 0.0;
-	if(v < 0.0)
-		v = 0.0;
+	if(u < 0.0f)
+		u = 0.0f;
+	if(v < 0.0f)
+		v = 0.0f;
 
-	if(u > 1.0)
-		u = 1.0;
-	if(v > 1.0)
-		v = 1.0;
+	if(u > 1.0f)
+		u = 1.0f;
+	if(v > 1.0f)
+		v = 1.0f;
 
 	size_t x = u * (m_diffuse_texture->width()-1);
 	size_t y = v * (m_diffuse_texture->height()-1);
