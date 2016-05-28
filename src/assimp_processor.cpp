@@ -38,7 +38,7 @@ void print_model_metrics(const shared_ptr<Model> &model)
 
 shared_ptr<Model> AssimpModelProcessor::load(const string &path, size_t vertex_limit, bool allow_cached_materials)
 {
-	cout << "Loading model: '" << path << "'\n";
+	cout << "=== Loading model: '" << path << "' === \n";
 
 	Assimp::Importer importer;
 
@@ -63,32 +63,27 @@ shared_ptr<Model> AssimpModelProcessor::load(const string &path, size_t vertex_l
 		return nullptr;
 	}
 
-	cout << "Loading materials.\n";
+	cout << "Loading materials...";
 	map<size_t, shared_ptr<Material>> materials;
-	int textured_materials = 0;
 	for(size_t i = 0; i < scene->mNumMaterials; ++i)
 	{
-		display_progress((i+1) / (float)scene->mNumMaterials);
+		//display_progress((i+1) / (float)scene->mNumMaterials);
 		const shared_ptr<Material> &material = load_single_material(i, scene->mMaterials[i], path, allow_cached_materials);
 		if(material)
 			materials.emplace(material->index(), material);
-			
-		if(material->has_texture())
-			textured_materials++;
 	}
-	cout << "Loaded " << materials.size() << " materials.\n";
-	cout << "Textured materials: " << textured_materials << ".\n";
+	cout << materials.size() << " loaded.\n";
 
-	cout << "\nLoading meshes.\n";
+	cout << "Loading meshes...";
 	vector<unique_ptr<Mesh>> meshes;
 	for(size_t i = 0; i < scene->mNumMeshes; ++i)
 	{
-		display_progress((i+1) / (float)scene->mNumMeshes);
+		//display_progress((i+1) / (float)scene->mNumMeshes);
 		meshes.push_back(load_single_mesh(scene->mMeshes[i], materials));
 	}
-	cout << "Loaded " << meshes.size() << " meshes.\n";
+	cout << meshes.size() << " loaded.\n";
 	
-	cout << "\nModel loaded.\n";
+	cout << "Done.\n\n";
 	//
 	
 	Matrix transform;
@@ -97,6 +92,32 @@ shared_ptr<Model> AssimpModelProcessor::load(const string &path, size_t vertex_l
 	print_model_metrics(model);
 
 	return model;
+}
+
+Texture* AssimpModelProcessor::load_texture(const aiString &path, const string &modelPath)
+{
+	boost::filesystem::path texturePath(path.C_Str());
+
+	if(texturePath.is_relative()) {
+		boost::filesystem::path modelDirectory(modelPath);
+		modelDirectory = modelDirectory.parent_path();
+
+		texturePath = boost::filesystem::canonical(texturePath, modelDirectory);
+	}
+
+	FREE_IMAGE_FORMAT type = FreeImage_GetFileType(texturePath.string().c_str());
+	if(type == FIF_UNKNOWN) {
+		type = FreeImage_GetFIFFromFilename(texturePath.string().c_str());
+
+		if(type == FIF_UNKNOWN)
+			throw runtime_error("Unable to determine texture format.");
+	}
+
+	FIBITMAP *bitmap = FreeImage_Load(type, texturePath.string().c_str());
+	Texture *texture = new Texture(bitmap);
+	FreeImage_Unload(bitmap);
+	
+	return texture;
 }
 
 shared_ptr<Material> AssimpModelProcessor::load_single_material(size_t index, aiMaterial *material, const string &model_path, bool allow_cached_materials)
@@ -153,35 +174,22 @@ shared_ptr<Material> AssimpModelProcessor::load_single_material(size_t index, ai
 		texCount += material->GetTextureCount((aiTextureType)i);
 	}
 	
-	Texture* diffuse_texture = nullptr;
+	Texture* diffuseTexture = nullptr;
 	if(material->GetTexture(aiTextureType_DIFFUSE, 0, &p) == AI_SUCCESS) {
-		boost::filesystem::path texture_path(p.C_Str());
-
-		if(texture_path.is_relative()) {
-			boost::filesystem::path model_directory(model_path);
-			model_directory = model_directory.parent_path();
-
-			texture_path = boost::filesystem::canonical(texture_path, model_directory);
-		}
-
-		FREE_IMAGE_FORMAT type = FreeImage_GetFileType(texture_path.string().c_str());
-		if(type == FIF_UNKNOWN) {
-			type = FreeImage_GetFIFFromFilename(texture_path.string().c_str());
-
-			if(type == FIF_UNKNOWN)
-				throw runtime_error("Unable to determine texture format.");
-		}
-
-		FIBITMAP *bitmap = FreeImage_Load(type, texture_path.string().c_str());
+		diffuseTexture = load_texture(p, model_path);
 		
-		diffuse_texture = new Texture(bitmap);
-		
-		FreeImage_Unload(bitmap);
-		
+	}
+	
+	Texture* normalTexture = nullptr;
+	if(material->GetTexture(aiTextureType_NORMALS, 0, &p) == AI_SUCCESS) {
+		normalTexture = load_texture(p, model_path);
 	}
 
 	//return shared_ptr<Material>(nullptr);
-	auto mat = make_shared<Material>(index, diffuse_texture, Color(diffuse_color.r, diffuse_color.g, diffuse_color.b), Color(emissive_color.r, emissive_color.g, emissive_color.b));
+	auto mat = make_shared<Material>(index,
+		Color(diffuse_color.r, diffuse_color.g, diffuse_color.b),
+		Color(emissive_color.r, emissive_color.g, emissive_color.b),
+		diffuseTexture, normalTexture);
 
 	m_material_cache.insert(cache_key, mat);
 
@@ -193,6 +201,8 @@ unique_ptr<Mesh> AssimpModelProcessor::load_single_mesh(aiMesh *mesh, const map<
 	vector<Vector3f> vertices;
 	vector<uint16_t> indices;
 	vector<Vector3f> normals;
+	vector<Vector3f> tangents;
+	vector<Vector3f> bitangents;
 	vector<Vector2f> texture_coords;
 
 	for(size_t i = 0; i < mesh->mNumVertices; ++i)
@@ -202,7 +212,16 @@ unique_ptr<Mesh> AssimpModelProcessor::load_single_mesh(aiMesh *mesh, const map<
 
 		aiVector3D &normal = mesh->mNormals[i];
 		normals.push_back(Vector3f(normal.x, normal.y, normal.z));
-
+		
+		if(mesh->HasTangentsAndBitangents()) {
+			
+			aiVector3D &tangent = mesh->mTangents[i];
+			tangents.push_back(Vector3f(tangent.x, tangent.y, tangent.z));
+		
+			aiVector3D &bitangent = mesh->mBitangents[i];
+			bitangents.push_back(Vector3f(bitangent.x, bitangent.y, bitangent.z));
+			
+		}
 		if(mesh->HasTextureCoords(0)) {
 			aiVector3D &texture_coord = mesh->mTextureCoords[0][i];
 			texture_coords.push_back(Vector2f(texture_coord.x, texture_coord.y));
@@ -222,8 +241,9 @@ unique_ptr<Mesh> AssimpModelProcessor::load_single_mesh(aiMesh *mesh, const map<
 
 	if(iterator != materials.end())	
 		material = iterator->second;
-
-	return unique_ptr<Mesh>(new Mesh(mesh->mName.C_Str(), vertices, indices, normals, texture_coords, material));
+		
+	return unique_ptr<Mesh>(new Mesh(mesh->mName.C_Str(), vertices, indices, normals, tangents, 
+		bitangents, texture_coords, material));
 }
 
 const vector<string> AssimpModelProcessor::handled_extensions() const

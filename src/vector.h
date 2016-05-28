@@ -185,19 +185,29 @@ public:
 			z() = other.z();
 	}
 
-	void divide(double factor) {
+	void divide(T factor)
+	 {
 		m_v[0] /= factor;
 		m_v[1] /= factor;
 		m_v[2] /= factor;
 	}
 
-	void multiply(double factor) {
+	void multiply(T factor)
+	 {
 		m_v[0] *= factor;
 		m_v[1] *= factor;
 		m_v[2] *= factor;
 	}
+	
+	void subtract(T value)
+	{
+		m_v[0] -= value;
+		m_v[1] -= value;
+		m_v[2] -= value;
+	}
 
-	void flip() {
+	void flip() 
+	{
 		m_v[0] = -m_v[0];
 		m_v[1] = -m_v[1];
 		m_v[2] = -m_v[2];

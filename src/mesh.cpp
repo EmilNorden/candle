@@ -3,8 +3,26 @@
 #include "matrix.h"
 #include "material.h"
 
-Mesh::Mesh(const std::string &name, const std::vector<Vector3f> &vertices, const std::vector<uint16_t> &indices, const std::vector<Vector3f> &normals, const std::vector<Vector2f> &texture_coords, const std::shared_ptr<Material> &material)
-	: m_name(name), m_original_vertices(vertices), m_vertices(vertices), m_indices(indices), m_original_normals(normals), m_normals(normals), m_texture_coords(texture_coords), m_material(material), m_bounds(AABB(Vector3f(FLT_MAX), Vector3f(-FLT_MAX)))
+Mesh::Mesh(	const std::string &name, 
+			const std::vector<Vector3f> &vertices, 
+			const std::vector<uint16_t> &indices,
+			const std::vector<Vector3f> &normals, 
+			const std::vector<Vector3f> &tangents,
+			const std::vector<Vector3f> &bitangents, 
+			const std::vector<Vector2f> &texture_coords,
+			const std::shared_ptr<Material> &material)
+	: 		m_name(name), 
+			m_original_vertices(vertices),
+			m_vertices(vertices),
+			m_indices(indices),
+			m_original_normals(normals),
+			m_normals(normals),
+			m_tangents(tangents),
+			m_bitangents(bitangents),
+			m_texture_coords(texture_coords),
+			m_material(material),
+			m_bounds(AABB(Vector3f(FLT_MAX), Vector3f(-FLT_MAX)))
+
 {
 	update_bounds();
 }

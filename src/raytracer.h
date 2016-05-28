@@ -120,20 +120,42 @@ Color RayTracer::shade(Ray &ray, const TScene &scene, std::mt19937 &random, cons
 	const Vector3f &v2 = intersection.mesh->m_vertices[intersection.index2] - intersection.mesh->m_vertices[intersection.index0];
 	const Vector3f &intersection_point = intersection.mesh->m_vertices[intersection.index0] + (v1 * intersection.u) + (v2 * intersection.v);
 
+	Vector3f interpolated_normal;
 	const Vector3f &n1 = intersection.mesh->m_normals[intersection.index1] - intersection.mesh->m_normals[intersection.index0];
 	const Vector3f &n2 = intersection.mesh->m_normals[intersection.index2] - intersection.mesh->m_normals[intersection.index0];
-	Vector3f interpolated_normal = intersection.mesh->m_normals[intersection.index0] + (n1 * intersection.u) + (n2 * intersection.v);
-	interpolated_normal.normalize();
-
-	Color diffuse_color;
-	if(mat->has_texture()) {
+	interpolated_normal = intersection.mesh->m_normals[intersection.index0] + (n1 * intersection.u) + (n2 * intersection.v);
+	
+	if(mat->has_normal_map()) {
+		
 		const Vector2f &tex1 = intersection.mesh->m_texture_coords[intersection.index1] - intersection.mesh->m_texture_coords[intersection.index0];
 		const Vector2f &tex2 = intersection.mesh->m_texture_coords[intersection.index2] - intersection.mesh->m_texture_coords[intersection.index0];
 		const Vector2f &interpolated_uv = intersection.mesh->m_texture_coords[intersection.index0] + (tex1 * intersection.u) + (tex2 * intersection.v);
 		
-		Color tex_sample;
-		mat->sample(interpolated_uv.x(), interpolated_uv.y(), tex_sample);
-		diffuse_color = tex_sample;
+		Vector3f normalMap;
+		mat->sample_normal(interpolated_uv.x(), interpolated_uv.y(), normalMap);
+		normalMap.multiply(2.0f);
+		normalMap.subtract(1.0f);
+		
+		const Vector3f &tangentEdge1 	= intersection.mesh->m_tangents[intersection.index1] - intersection.mesh->m_tangents[intersection.index0];
+		const Vector3f &tangentEdge2 	= intersection.mesh->m_tangents[intersection.index2] - intersection.mesh->m_tangents[intersection.index0];
+		Vector3f tangent = intersection.mesh->m_tangents[intersection.index0] + (tangentEdge1 * intersection.u) + (tangentEdge2 * intersection.v);
+		
+		const Vector3f &bitangentEdge1 	= intersection.mesh->m_bitangents[intersection.index1] - intersection.mesh->m_bitangents[intersection.index0];
+		const Vector3f &bitangentEdge2 	= intersection.mesh->m_bitangents[intersection.index2] - intersection.mesh->m_bitangents[intersection.index0];
+		Vector3f bitangent = intersection.mesh->m_bitangents[intersection.index0] + (bitangentEdge1 * intersection.u) + (bitangentEdge2 * intersection.v);
+		
+		interpolated_normal = (tangent * normalMap.x()) + (bitangent * normalMap.y()) + (interpolated_normal * normalMap.z());
+	}
+	
+	interpolated_normal.normalize();
+
+	Color diffuse_color;
+	if(mat->has_diffuse_map()) {
+		const Vector2f &tex1 = intersection.mesh->m_texture_coords[intersection.index1] - intersection.mesh->m_texture_coords[intersection.index0];
+		const Vector2f &tex2 = intersection.mesh->m_texture_coords[intersection.index2] - intersection.mesh->m_texture_coords[intersection.index0];
+		const Vector2f &interpolated_uv = intersection.mesh->m_texture_coords[intersection.index0] + (tex1 * intersection.u) + (tex2 * intersection.v);
+		
+		mat->sample_diffuse(interpolated_uv.x(), interpolated_uv.y(), diffuse_color);
 	}
 	else {
 		diffuse_color = mat->diffuse();
@@ -208,6 +230,7 @@ void RayTracer::render_internal(RenderContext &context, const Camera &camera, co
 				Color result = context.configuration.default_color();
 				if(scene.propagate(ray, intersection, nullptr)) {
 					
+					//result = Color(1, 0, 0);
 					result = shade(ray, scene, context.random, intersection, 5);
 				}
 

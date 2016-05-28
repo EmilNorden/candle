@@ -11,8 +11,6 @@
 class Material;
 class Mesh;
 class Model;
-struct aiMaterial;
-struct aiMesh;
 
 class ModelProcessor
 {

@@ -160,31 +160,62 @@ void parse_scene_config(libconfig::Config &cfg, TScene &scene, ModelLoader &load
 					if(mesh->name() == meshName)
 					{
 						meshFound = true;
-						Texture *texture = nullptr;
+						Texture *diffuseMap = nullptr;
+						Texture *normalMap = nullptr;
 						Color diffuse;
 						Color emission;
 						
-						if(meshConfig[j].exists("diffuseColor"))
-						{
+						if(meshConfig[j].exists("diffuseColor")) {
+							
 							auto& diffuseColor = meshConfig[j].lookup("diffuseColor");
 							diffuse = parse_color(diffuseColor);
+							
+						}
+						else {
+							
+							//diffuse = mesh->m_material->diffuse();
+							
 						}
 						
-						std::string texturePath;
-						if(meshConfig[j].lookupValue("texture", texturePath))
-						{
-							std::cout << "Loading texture '" << texturePath << "'.\n";
-							texture = new Texture(texturePath);
+						std::string mapPath;
+						if(meshConfig[j].lookupValue("diffuseMap", mapPath)) {
+							
+							std::cout << "Loading texture '" << mapPath << "'.\n";
+							diffuseMap = new Texture(mapPath);
+							
+						}
+						else {
+							
+							diffuseMap = mesh->m_material->diffuse_map();
+							
+						}
+						
+						if(meshConfig[j].lookupValue("normalMap", mapPath)) {
+							
+							std::cout << "Loading texture '" << mapPath << "'.\n";
+							normalMap = new Texture(mapPath);
+							
+						}
+						else {
+							
+							normalMap = mesh->m_material->normal_map();
+							
 						}
 
-						if(meshConfig[j].exists("emissionColor"))
-						{
+						if(meshConfig[j].exists("emissionColor")) {
+							
 							double emissionStrength = meshConfig[j].lookup("emissionStrength");
 							auto& emissionColor = meshConfig[j].lookup("emissionColor");
 							emission = parse_color(emissionColor) * emissionStrength;
+							
+						}
+						else {
+							
+							emission = mesh->m_material->emissive();
+							
 						}
 						
-						mesh->m_material = std::make_shared<Material>(0, texture, diffuse, emission);
+						mesh->m_material = std::make_shared<Material>(0, diffuse, emission, diffuseMap, normalMap);
 						break;
 					}
 				}
@@ -213,7 +244,7 @@ int main(int argc, char **argv)
 	
 	libconfig::Config cfg;
 	
-	cfg.readFile("../input/test1.cfg");
+	cfg.readFile("../input/test2.cfg");
 
 	auto renderConfiguration = parse_render_config(cfg);
 	auto camera = parse_camera_config(cfg, renderConfiguration.resolution_width(), renderConfiguration.resolution_height());
@@ -237,6 +268,8 @@ int main(int argc, char **argv)
 		dist = dist_ray.dist;
 		
 	std::cout << "Distance: " << dist << "\n";
+	if(dist > 3000)
+		dist = 3000;
 	camera.set_focal_length(dist);
 	
 	//DWORD id = GetCurrentThreadId();
