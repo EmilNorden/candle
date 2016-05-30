@@ -20,6 +20,7 @@
 #include <ctime>
 
 #include <libconfig.h++>
+#include <immintrin.h>
 
 #define PI 3.14159265359
 
@@ -164,6 +165,8 @@ void parse_scene_config(libconfig::Config &cfg, TScene &scene, ModelLoader &load
 						Texture *normalMap = nullptr;
 						Color diffuse;
 						Color emission;
+						float reflectivity;
+						
 						
 						if(meshConfig[j].exists("diffuseColor")) {
 							
@@ -173,7 +176,7 @@ void parse_scene_config(libconfig::Config &cfg, TScene &scene, ModelLoader &load
 						}
 						else {
 							
-							//diffuse = mesh->m_material->diffuse();
+							diffuse = mesh->m_material->diffuse();
 							
 						}
 						
@@ -215,7 +218,19 @@ void parse_scene_config(libconfig::Config &cfg, TScene &scene, ModelLoader &load
 							
 						}
 						
+						if(meshConfig[j].exists("reflectivity")) {
+							
+							reflectivity = meshConfig[j].lookup("reflectivity");
+							
+						}
+						else {
+							
+							reflectivity = mesh->m_material->reflectivity();
+							
+						}
+						
 						mesh->m_material = std::make_shared<Material>(0, diffuse, emission, diffuseMap, normalMap);
+						mesh->m_material->set_reflectivity(reflectivity);
 						break;
 					}
 				}
@@ -233,8 +248,20 @@ void parse_scene_config(libconfig::Config &cfg, TScene &scene, ModelLoader &load
 
 int main(int argc, char **argv)
 {
+	std::string inputFile;
+	if(argc > 1) {
+		
+		inputFile = argv[1];
+		
+	}
+	else {
+		
+		inputFile = "../input/test2.cfg";
+		
+	}
+	std::cout << "Input: " << inputFile << "\n";
+	
 	size_t seed = 1439398627; // time(0);
-	std::cout << "Using seed: " << seed << "\n";
 	std::mt19937 rand(seed);
 	FreeImage_Initialise();
 	
@@ -244,7 +271,7 @@ int main(int argc, char **argv)
 	
 	libconfig::Config cfg;
 	
-	cfg.readFile("../input/test2.cfg");
+	cfg.readFile(inputFile.c_str());
 
 	auto renderConfiguration = parse_render_config(cfg);
 	auto camera = parse_camera_config(cfg, renderConfiguration.resolution_width(), renderConfiguration.resolution_height());

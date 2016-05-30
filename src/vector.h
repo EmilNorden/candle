@@ -4,6 +4,7 @@
 #include <random>
 #include <string>
 #include <sstream>
+#include <immintrin.h>
 
 template <typename T>
 T lerp(T a, T b, double factor) {
@@ -81,50 +82,26 @@ public:
 	bool operator!=(const Vector3 &other) const {
 		return !(*this == other);
 	}
+	
+	Vector3<T> operator-(const Vector3<T> &other) const;
+	
+	Vector3<T> operator+(const Vector3<T> &other) const;
 
-	Vector3 operator-(const Vector3 &other) const {
-		return Vector3(m_v[0] - other.m_v[0], m_v[1] - other.m_v[1], m_v[2] - other.m_v[2]);
-	}
+	Vector3<T> operator*(const Vector3<T> &other) const;
 
-	Vector3 operator+(const Vector3 &other) const {
-		return Vector3(m_v[0] + other.m_v[0], m_v[1] + other.m_v[1], m_v[2] + other.m_v[2]);
-	}
+	Vector3<T> operator*(const T f) const;
 
-	Vector3 operator*(const Vector3 &other) const {
-		return Vector3(m_v[0] * other.m_v[0], m_v[1] * other.m_v[1], m_v[2] * other.m_v[2]);
-	}
+	Vector3<T> operator/(const T f) const;
 
-	Vector3 operator*(const double f) const {
-		return Vector3(m_v[0] * f, m_v[1] * f, m_v[2] * f);
-	}
+	Vector3<T> operator-(const T f) const;
 
-	Vector3 operator/(const double f) const {
-		return Vector3(m_v[0] / f, m_v[1] / f, m_v[2] / f);
-	}
+	Vector3<T> operator+(const T f) const;
 
-	Vector3 operator-(const double f) const {
-		return Vector3(m_v[0] - f, m_v[1] - f, m_v[2] - f);
-	}
+	Vector3<T> &operator+=(const Vector3<T> &other);
 
-	Vector3 operator+(const double f) const {
-		return Vector3(m_v[0] + f, m_v[1] + f, m_v[2] + f);
-	}
+	double length() const;
 
-	Vector3 &operator+=(const Vector3 &other) {
-		m_v[0] += other.m_v[0];
-		m_v[1] += other.m_v[1];
-		m_v[2] += other.m_v[2];
-
-		return *this;
-	}
-
-	double length() const {
-		return sqrt(pow(m_v[0], 2) + pow(m_v[1], 2) + pow(m_v[2], 2));
-	}
-
-	double length_squared() const {
-		return pow(m_v[0], 2) + pow(m_v[1], 2) + pow(m_v[2], 2);
-	}
+	double length_squared() const;
 
 	void normalize() {
 		double len = length();
@@ -240,7 +217,7 @@ public:
 		return ss.str();
 	}
 private:
-	T m_v[3];
+	__attribute__ ((aligned(32))) T m_v[3];
 };
 
 template <class T>
@@ -308,6 +285,182 @@ private:
 	T m_v[2];
 };
 
+template <typename T>
+Vector3<T> Vector3<T>::operator-(const Vector3<T> &other) const
+{
+		return Vector3<T>(m_v[0] - other.m_v[0], m_v[1] - other.m_v[1], m_v[2] - other.m_v[2]);
+}
+/*
+template<> inline
+Vector3<float> Vector3<float>::operator-(const Vector3<float> &other) const 
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 a = _mm256_maskload_ps(m_v, mask);
+	__m256 b = _mm256_maskload_ps(other.m_v, mask);
+	__m256 result = _mm256_sub_ps(a, b);
+	float *v = (float*)&result;
+	return Vector3<float>(v[0], v[1], v[2]);
+}
+*/
+template <typename T>
+Vector3<T> Vector3<T>::operator+(const Vector3<T> &other) const
+{
+	return Vector3(m_v[0] + other.m_v[0], m_v[1] + other.m_v[1], m_v[2] + other.m_v[2]);
+}
+/*
+template <> inline
+Vector3<float> Vector3<float>::operator+(const Vector3<float> &other) const
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 a = _mm256_maskload_ps(m_v, mask);
+	__m256 b = _mm256_maskload_ps(other.m_v, mask);
+	__m256 result = _mm256_add_ps(a, b);
+	float *v = (float*)&result;
+	return Vector3<float>(v[0], v[1], v[2]);
+}
+*/
+template <typename T>
+Vector3<T> Vector3<T>::operator*(const Vector3<T> &other) const
+{
+	return Vector3<T>(m_v[0] * other.m_v[0], m_v[1] * other.m_v[1], m_v[2] * other.m_v[2]);
+}
+/*
+template <> inline
+Vector3<float> Vector3<float>::operator*(const Vector3<float> &other) const
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 a = _mm256_maskload_ps(m_v, mask);
+	__m256 b = _mm256_maskload_ps(other.m_v, mask);
+	__m256 result = _mm256_mul_ps(a, b);
+	float *v = (float*)&result;
+	return Vector3<float>(v[0], v[1], v[2]);
+}
+*/
+template <typename T>
+Vector3<T> Vector3<T>::operator*(const T f) const
+{
+	return Vector3<T>(m_v[0] * f, m_v[1] * f, m_v[2] * f);
+}
+/*
+template <> inline
+Vector3<float> Vector3<float>::operator*(const float f) const
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 a = _mm256_maskload_ps(m_v, mask);
+	__m256 b = _mm256_set1_ps(f);
+	__m256 result = _mm256_mul_ps(a, b);
+	float *v = (float*)&result;
+	return Vector3<float>(v[0], v[1], v[2]);
+}
+*/
+template <typename T>
+Vector3<T> Vector3<T>::operator/(const T f) const
+{
+	return Vector3<T>(m_v[0] / f, m_v[1] / f, m_v[2] / f);
+}
+/*
+template <> inline
+Vector3<float> Vector3<float>::operator/(const float f) const
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 a = _mm256_maskload_ps(m_v, mask);
+	__m256 b = _mm256_set1_ps(f);
+	__m256 result = _mm256_div_ps(a, b);
+	float *v = (float*)&result;
+	return Vector3<float>(v[0], v[1], v[2]);
+}
+*/
+template <typename T>
+Vector3<T> Vector3<T>::operator-(const T f) const
+{
+	return Vector3<T>(m_v[0] - f, m_v[1] - f, m_v[2] - f);
+}
+/*
+template <> inline
+Vector3<float> Vector3<float>::operator-(const float f) const
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 a = _mm256_maskload_ps(m_v, mask);
+	__m256 b = _mm256_set1_ps(f);
+	__m256 result = _mm256_sub_ps(a, b);
+	float *v = (float*)&result;
+	return Vector3<float>(v[0], v[1], v[2]);
+}
+*/
+template <typename T>
+Vector3<T> Vector3<T>::operator+(const T f) const
+{
+	return Vector3<T>(m_v[0] + f, m_v[1] + f, m_v[2] + f);
+}
+/*
+template <> inline
+Vector3<float> Vector3<float>::operator+(const float f) const
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 a = _mm256_maskload_ps(m_v, mask);
+	__m256 b = _mm256_set1_ps(f);
+	__m256 result = _mm256_add_ps(a, b);
+	float *v = (float*)&result;
+	return Vector3<float>(v[0], v[1], v[2]);
+}
+*/
+template <typename T>
+Vector3<T> &Vector3<T>::operator+=(const Vector3<T> &other)
+{
+		m_v[0] += other.m_v[0];
+		m_v[1] += other.m_v[1];
+		m_v[2] += other.m_v[2];
+
+		return *this;
+}
+/*
+template <> inline
+Vector3<float> &Vector3<float>::operator+=(const Vector3<float> &other)
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 a = _mm256_maskload_ps(m_v, mask);
+	__m256 b = _mm256_maskload_ps(other.m_v, mask);
+	__m256 result = _mm256_add_ps(a, b);
+	float *v = (float*)&result;
+	m_v[0] = v[0];
+	m_v[1] = v[1];
+	m_v[2] = v[2];
+
+	return *this;
+}
+*/
+template <typename T>
+double Vector3<T>::length() const
+{
+	return sqrt(pow(m_v[0], 2) + pow(m_v[1], 2) + pow(m_v[2], 2));
+}
+/*
+template <> inline
+double Vector3<float>::length() const
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 vector = _mm256_maskload_ps(m_v, mask);
+	__m256 result = _mm256_sqrt_ps(_mm256_dp_ps(vector, vector, 0x71));
+	float *v = (float*)&result;
+	return v[0];
+}
+*/
+template <typename T>
+double Vector3<T>::length_squared() const
+{
+	return pow(m_v[0], 2) + pow(m_v[1], 2) + pow(m_v[2], 2);
+}
+/*
+template <> inline
+double Vector3<float>::length_squared() const
+{
+	__m256i mask = _mm256_setr_epi32(-1, -1, -1, 0, 0, 0, 0, 0);
+	__m256 vector = _mm256_maskload_ps(m_v, mask);
+	__m256 result = _mm256_dp_ps(vector, vector, 0x71);
+	float *v = (float*)&result;
+	return v[0];
+}
+*/
 typedef Vector2<int> Vector2i;
 typedef Vector2<double> Vector2d;
 typedef Vector2<float> Vector2f;
