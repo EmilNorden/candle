@@ -4,7 +4,7 @@
 
 Material::Material(size_t idx, const Color &diffuse, const Color &emissive, Texture* diffuseMap, Texture* normalMap)
 		: m_index(idx), m_diffuse(diffuse), m_emissive(emissive),
-		 m_diffuse_map(diffuseMap), m_normal_map(normalMap), m_reflectivity(0.0)
+		 m_diffuse_map(diffuseMap), m_normal_map(normalMap), m_reflectivity(0.0f)
 {
 }
 

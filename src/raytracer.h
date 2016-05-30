@@ -160,11 +160,11 @@ Color RayTracer::shade(Ray &ray, const TScene &scene, std::mt19937 &random, cons
 	else {
 		diffuse_color = mat->diffuse();
 	}
-
+	
 	Color result = mat->emissive();
 	
 	global_illumination(ray, scene, random, mat, intersection_point, interpolated_normal, diffuse_color, result, depth);
-
+	
 	// diffuse
 	auto& emissive_meshes = scene.emissive_meshes();
 	size_t emissive_mesh_count = emissive_meshes.size();
@@ -192,21 +192,20 @@ Color RayTracer::shade(Ray &ray, const TScene &scene, std::mt19937 &random, cons
 		}
 	}
 	
-		//if(mat->reflectivity() > 0) {
-	//	result = Vector3d(1, 0, 0);
-	//	//Vector3d reflected_direction = ray.m_direction - interpolated_normal * 2.0 * ray.m_direction.dot(interpolated_normal);
-	//	//reflected_direction.normalize();
-	//	//Ray reflected_ray(intersection_point, reflected_direction);
-
-	//	//result = result*(1-mat->reflectivity()) + propagate(reflected_ray, default_color, random, depth-1, &collision)*mat->reflectivity();
-	//}
-
-	/*Vector3d light(1, 1, 0);
-	light.normalize();
-	double dot = light.dot(interpolated_normal);
-	if(dot < 0)
-		dot = 0.2;
-	result = diffuse_color * dot;*/
+	float reflectivity = mat->reflectivity();
+	if(reflectivity > 0) {
+		Vector3f reflected_direction = ray.m_direction - interpolated_normal * 2.0 * ray.m_direction.dot(interpolated_normal);
+		reflected_direction.normalize();
+		Ray reflectedRay(intersection_point, reflected_direction);
+		
+		RayMeshIntersection reflectedIntersection;
+		if(scene.propagate(reflectedRay, reflectedIntersection, &intersection)) {
+			
+			result = (result * (1-reflectivity)) + shade(reflectedRay, scene, random, reflectedIntersection, depth-1) * reflectivity;
+			
+		}
+	}
+	
 	return result;
 }
 

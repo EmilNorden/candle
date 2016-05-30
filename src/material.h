@@ -21,8 +21,8 @@ public:
 	bool is_emissive() const { return !m_emissive.is_zero(); }
 	bool has_diffuse_map() const { return m_diffuse_map != nullptr; }
 	bool has_normal_map() const { return m_normal_map != nullptr; }
-	double reflectivity() const { return m_reflectivity; }
-	void set_reflectivity(double refl) { m_reflectivity = refl; }
+	float reflectivity() const { return m_reflectivity; }
+	void set_reflectivity(float refl) { m_reflectivity = refl; }
     int index() const { return m_index; }
 	void set_diffuse_map(Texture* diffuseMap);
 	Texture *diffuse_map() { return m_diffuse_map; }
@@ -38,7 +38,7 @@ private:
 	
 	Texture *m_diffuse_map;
 	Texture *m_normal_map;
-	double m_reflectivity;
+	float m_reflectivity;
 };
 
 #endif
